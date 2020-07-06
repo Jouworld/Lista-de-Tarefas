@@ -24,6 +24,18 @@ class _HomeState extends State<Home> {
 
   final  tarefaController = TextEditingController();
 
+
+  @override //reescrever o método
+  void initState () {
+    super.initState();
+
+    _readData().then((data){
+      setState(() {
+        _toDoList = json.decode(data);
+      });
+    });
+  }
+
   void _addToDo(){
 
     setState(() { //comando para atualizar a tela
@@ -32,6 +44,8 @@ class _HomeState extends State<Home> {
       tarefaController.text = "";// resetando campo de texto
       newToDo["ok"] = false; // inicializando a tarefa como não concluída
       _toDoList.add(newToDo);
+
+      _saveData();
     });
   }
 
@@ -50,6 +64,9 @@ class _HomeState extends State<Home> {
       ),
       body: Column(
         children: <Widget>[
+          SizedBox(
+            height: 20.0,
+          ),
           Container(
             padding: EdgeInsets.fromLTRB(17.0, 1.0, 7.0, 1.0),
             child: Row(
@@ -91,7 +108,10 @@ class _HomeState extends State<Home> {
                     child: Icon(_toDoList[index]["ok"]? Icons.check : Icons.assignment_late),
                   ),
                   onChanged: (c){
-                    print (c);
+                    setState(() {
+                      _toDoList[index]["ok"] = c;
+                      _saveData();
+                      });
                   },
                 );
               },
