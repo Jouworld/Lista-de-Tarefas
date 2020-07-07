@@ -100,24 +100,38 @@ class _HomeState extends State<Home> {
             child: ListView.builder(//criar lista conforme a mesma vai sendo renderizada
               padding: EdgeInsets.only(top: 10.0),
               itemCount: _toDoList.length, // pegando o tamanho da lista
-              itemBuilder: (context, index){
-                return CheckboxListTile(
-                  title: Text(_toDoList[index]["title"]),
-                  value: _toDoList[index]["ok"],
-                  secondary: CircleAvatar(
-                    child: Icon(_toDoList[index]["ok"]? Icons.check : Icons.assignment_late),
-                  ),
-                  onChanged: (c){
-                    setState(() {
-                      _toDoList[index]["ok"] = c;
-                      _saveData();
-                      });
-                  },
-                );
-              },
+              itemBuilder: buildItem,
             ),
           )
         ],
+      ),
+    );
+  }
+
+  Widget buildItem (context, index){
+    return Dismissible(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      background: Container(
+        color: Colors.red,
+        child: Align(
+          alignment: Alignment(-0.9, 0.0),
+          child: Icon(Icons.delete, color: Colors.white),
+
+        ),
+      ),
+      direction: DismissDirection.startToEnd,
+      child: CheckboxListTile(
+        title: Text(_toDoList[index]["title"]),
+        value: _toDoList[index]["ok"],
+        secondary: CircleAvatar(
+          child: Icon(_toDoList[index]["ok"]? Icons.check : Icons.assignment_late),
+        ),
+        onChanged: (c){
+          setState(() {
+            _toDoList[index]["ok"] = c;
+            _saveData();
+          });
+        },
       ),
     );
   }
