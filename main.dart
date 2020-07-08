@@ -21,6 +21,11 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
 
   List _toDoList = [];
+  Map<String, dynamic> _lastRemoved;
+  int _lastRemovedPos;
+
+
+
 
   final  tarefaController = TextEditingController();
 
@@ -47,6 +52,25 @@ class _HomeState extends State<Home> {
 
       _saveData();
     });
+  }
+
+  Future<Null> _refresh() async{
+
+    await Future.delayed(Duration(seconds: 1));
+
+    setState(() {
+      _toDoList.sort((a,b){
+        if(a["ok"] && !b["ok"]) return 1;
+        else if (!a["ok"] && b["ok"]) return -1;
+        else return 0;
+      });
+      _saveData();
+    });
+
+    return null;
+
+
+
   }
 
 
@@ -97,11 +121,14 @@ class _HomeState extends State<Home> {
 
           ),
           Expanded(
-            child: ListView.builder(//criar lista conforme a mesma vai sendo renderizada
-              padding: EdgeInsets.only(top: 10.0),
-              itemCount: _toDoList.length, // pegando o tamanho da lista
-              itemBuilder: buildItem,
-            ),
+            child: RefreshIndicator(
+              child: ListView.builder(//criar lista conforme a mesma vai sendo renderizada
+                padding: EdgeInsets.only(top: 10.0),
+                itemCount: _toDoList.length, // pegando o tamanho da lista
+                itemBuilder: buildItem,
+              ),
+              onRefresh: _refresh,
+            )
           )
         ],
       ),
@@ -133,6 +160,36 @@ class _HomeState extends State<Home> {
           });
         },
       ),
+      onDismissed: (direction){
+
+        setState(() {
+
+          _lastRemoved = Map.from(_toDoList[index]); // duplicando o item e colocando no _lastRemoved
+          _lastRemovedPos = index;//salvar a posição que foi removida
+          _toDoList.removeAt(index); // remover da lista
+          _saveData();
+
+          final snack = SnackBar(
+            content: Text("Tarefa \"${_lastRemoved["title"]}\" removida!"),
+            action: SnackBarAction(
+              label: "Desfazer",
+              onPressed: (){ // função para desfazer
+               setState(() {
+                 _toDoList.insert(_lastRemovedPos, _lastRemoved);
+                 _saveData();
+               });
+              },
+            ),
+            duration: Duration(seconds: 3),
+
+          );
+          Scaffold.of(context).removeCurrentSnackBar();
+          Scaffold.of(context).showSnackBar(snack);
+
+        });
+
+
+      },
     );
   }
 
